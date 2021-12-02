@@ -85,60 +85,60 @@ logger.info(`command code: ` + commandCode)
 
 nfc.on('reader', async reader => {
 
-	logger.info(`device attached`, reader);
+  logger.info(`device attached`, reader);
 
-	reader.aid = 'F000000001';
+  reader.aid = 'F000000001';
 
-	reader.on('card', async card => {
+  reader.on('card', async card => {
 
-		logger.info(`card detected`, reader, card);
+    logger.info(`card detected`, reader, card);
 
-		try {
+    try {
 
-			/*
+      /*
       |
       | Initial NFC Read Command
       |
       */
 
-			var tag = Buffer.alloc(0); 
+      var tag = Buffer.alloc(0); 
 
       const configBytes = await reader.read(0xe8, 4);
-			logger.info(`configBytes`, reader, configBytes);
+      logger.info(`configBytes`, reader, configBytes);
 
-			logger.info(`outputRecord:`, reader);
+      logger.info(`outputRecord:`, reader);
 
-			// Read the static record and dynamically locked record
-			for (var i = 0x00; i < 0x63; i ++ ) {
+      // Read the static record and dynamically locked record
+      for (var i = 0x00; i < 0x63; i ++ ) {
         var page = await reader.read(i, 4);
-				//logger.info(`data read`, reader, page);
-				//data.copy(tag, i * 4, 0, 4);
-				tag = Buffer.concat([tag, page]);
+        //logger.info(`data read`, reader, page);
+        //data.copy(tag, i * 4, 0, 4);
+        tag = Buffer.concat([tag, page]);
       }
 
       // logger.info(`inputRecord:`, reader);
 
       // Read input record prior to write
-	    //   for (var i = 0xB0; i < 0xCA; i ++ ) {
-	    //     const data = await reader.read(i, 4);
-					// logger.info(`data read`, reader, data);
-	    //   }
+      //   for (var i = 0xB0; i < 0xCA; i ++ ) {
+      //     const data = await reader.read(i, 4);
+      		// logger.info(`data read`, reader, data);
+      //   }
 
-			// 70 - 73	4	74	01 x 4	>> Hardware Revision Number
-			// 74 - 77	4	78	02 x 4	>> Firmware Number
-			// 78 - 85	8	86	03 x 8	>> Serial Number (created by us, read each time from atecc?)
-			// 86 - 149	64	150	04 x 64	>> Public Key 1 (For Signatures of External Data) (read each time from atecc?)
-			// 150 - 213	64	214	05 x 64	>> Public Key 2 (For Signatures of Internal Random Number Only) (read each time from atecc?)
-			// 214 - 233	20	234	06 x 20	>> Smart Contract Address (read each time from atecc?)
-			// 234 - 240	7	241	07 x 7	>> NXP i2c serial number
-			// 241 - 256	16	257	08 x 16	>> NXP MCU serial number
-			// 257 - 265	9	266	09 x 9	>> atecc608a serial number
-			// 266 - 393	128	394	01 x 128	>> Config Zone Bytes (read each time from atecc?)
+      // 70 - 73	4	74	01 x 4	>> Hardware Revision Number
+      // 74 - 77	4	78	02 x 4	>> Firmware Number
+      // 78 - 85	8	86	03 x 8	>> Serial Number (created by us, read each time from atecc?)
+      // 86 - 149	64	150	04 x 64	>> Public Key 1 (For Signatures of External Data) (read each time from atecc?)
+      // 150 - 213	64	214	05 x 64	>> Public Key 2 (For Signatures of Internal Random Number Only) (read each time from atecc?)
+      // 214 - 233	20	234	06 x 20	>> Smart Contract Address (read each time from atecc?)
+      // 234 - 240	7	241	07 x 7	>> NXP i2c serial number
+      // 241 - 256	16	257	08 x 16	>> NXP MCU serial number
+      // 257 - 265	9	266	09 x 9	>> atecc608a serial number
+      // 266 - 393	128	394	01 x 128	>> Config Zone Bytes (read each time from atecc?)
 
-			var hardwareRevisionNumber = tag.toString('hex').slice(140, 148);
-			var firmwareNumber = tag.toString('hex').slice(148, 156);
-			var serialNumber = tag.toString('hex').slice(156, 172);
-			var externalPublicKey = tag.toString('hex').slice(172, 300);
+      var hardwareRevisionNumber = tag.toString('hex').slice(140, 148);
+      var firmwareNumber = tag.toString('hex').slice(148, 156);
+      var serialNumber = tag.toString('hex').slice(156, 172);
+      var externalPublicKey = tag.toString('hex').slice(172, 300);
       var internalPublicKey = tag.toString('hex').slice(300, 428);
       var smartContractAddress = tag.toString('hex').slice(428, 468);
       var nxpI2cSerial = tag.toString('hex').slice(468, 482);
@@ -156,12 +156,12 @@ nfc.on('reader', async reader => {
       // logger.info(`nxpI2cSerial`, nxpI2cSerial); -- unused in v1 SiLo 
       // logger.info(`nxp804Serial`, nxp804Serial); -- unused in v1 SiLo
       logger.info(`atecc608aSerial`, atecc608aSerial);
-			// logger.info(`smartContractAddress`, smartContractAddress); -- unused in v1 SiLo
-			logger.info(`configZoneBytes`, configZoneBytes);			
+      // logger.info(`smartContractAddress`, smartContractAddress); -- unused in v1 SiLo
+      logger.info(`configZoneBytes`, configZoneBytes);			
 
       logger.info(`externalPublicKeyHash`, externalPublicKeyHash);
 
-			/*
+      /*
       |
       | Input Record NFC Write Command
       |
@@ -190,47 +190,47 @@ nfc.on('reader', async reader => {
       const crcBuffer = Buffer.alloc(2);
 
       var inputCrc = crc.crc16ccitt(helpers._hexToBytes(
-										                  commandCode +
-										                  toAddressInputRecord +
-										                  blockNumber +
-										                  combinedHash
-										              		)
-										          			)  
+            commandCode +
+            toAddressInputRecord +
+            blockNumber +
+            combinedHash
+            )
+          )  
 
       crcBuffer.writeUInt16BE(inputCrc);
 
-			logger.info(`crcBuffer`, reader, crcBuffer);
+      logger.info(`crcBuffer`, reader, crcBuffer);
 
-			// Create the input record
+      // Create the input record
       var inputBuffer = Buffer.concat([
-      										Buffer.from('550063','hex'),
-	      									Buffer.from(commandCode, 'hex'),
-	      									Buffer.from(toAddressInputRecord, 'hex'),
-	      									Buffer.from(blockNumber, 'hex'),
-	      									Buffer.from(combinedHash, 'hex'),
-	      									Buffer.from(crcBuffer),
-	      									Buffer.from('FE00', 'hex')
-      									]);
+          	Buffer.from('550063','hex'),
+          	Buffer.from(commandCode, 'hex'),
+          	Buffer.from(toAddressInputRecord, 'hex'),
+          	Buffer.from(blockNumber, 'hex'),
+          	Buffer.from(combinedHash, 'hex'),
+          	Buffer.from(crcBuffer),
+          	Buffer.from('FE00', 'hex')
+          ]);
 
       //logger.info(`command buffer`, inputBuffer);
 
-			logger.info(`inputBufferWrite`, reader);
+      logger.info(`inputBufferWrite`, reader);
 
       await helpers._delay(200);
 
-			// Write input record
+      // Write input record
       const writtenData = await reader.write(0xB0, inputBuffer);
 
-			/*
+      /*
       |
       | Confirmation NFC Read Command
       |
       */      
 
       // Confirmation read after write
-    	const readLastIcBlockAfterWrite = await reader.read(0xCB, 4);  
+      const readLastIcBlockAfterWrite = await reader.read(0xCB, 4);  
 
-    	logger.info(`readLastIcBlockAfterWrite:`, reader, readLastIcBlockAfterWrite); 
+      logger.info(`readLastIcBlockAfterWrite:`, reader, readLastIcBlockAfterWrite); 
 
       /*
       |
@@ -238,7 +238,7 @@ nfc.on('reader', async reader => {
       |
       */
 
-    	// Required delay before reading result from tag
+      // Required delay before reading result from tag
       if (commandCode == '55' || commandCode == '00') {
         await helpers._delay(2500);
       } else {
@@ -252,8 +252,8 @@ nfc.on('reader', async reader => {
       // Read input record after write
       for (var i = 0x64; i < 0xA5; i ++ ) {
         var page = await reader.read(i, 4);
-				// logger.info(`data read`, reader, page);
-				outputBuffer = Buffer.concat([outputBuffer, page]);
+        // logger.info(`data read`, reader, page);
+        outputBuffer = Buffer.concat([outputBuffer, page]);
       }    
 
       // Grab the last hash and signature for comparison
@@ -278,22 +278,22 @@ nfc.on('reader', async reader => {
       logger.info(`verfication worked?`, reader, verfication);
 
       // Required confirmation read after checking sig
-    	const readLastIcBlockAfterSig = await reader.read(0xCB, 4);  
+      const readLastIcBlockAfterSig = await reader.read(0xCB, 4);  
 
-			/******************
-			* Diagnostic Read *
-			******************/
+      /******************
+      * Diagnostic Read *
+      ******************/
 
-			await helpers._delay(200);
+      await helpers._delay(200);
 
       logger.info(`read diagnostic:`, reader);
-    	var debugBytes = Buffer.alloc(0);
+      var debugBytes = Buffer.alloc(0);
 
       // Read back output records
       for (var i = 0xAC; i < 0xAF; i ++ ) {
         var page = await reader.read(i, 4);
         debugBytes = Buffer.concat([debugBytes, page]);
-				// logger.info(`data read`, reader, page);
+        // logger.info(`data read`, reader, page);
       }
 
       var stringDebugBytes = debugBytes.toString('ascii');
@@ -384,26 +384,26 @@ nfc.on('reader', async reader => {
         console.log('Refusing to export, bad debugBytes message');
       }      
 
-		} catch (err) {
-			logger.error(`error when reading data`, reader, err);
-		}
+    } catch (err) {
+    	logger.error(`error when reading data`, reader, err);
+    }
 
     if (argv['scanonce']) {
       process.exit();
     }
 	});
 
-	reader.on('error', err => {
-		logger.error(`an error occurred`, reader, err);
-	});
+  reader.on('error', err => {
+    logger.error(`an error occurred`, reader, err);
+  });
 
-	reader.on('end', () => {
-		logger.info(`device removed`, reader);
-	});
+  reader.on('end', () => {
+    logger.info(`device removed`, reader);
+  });
 
 
 });
 
 nfc.on('error', err => {
-	logger.error(`an error occurred`, err);
+  logger.error(`an error occurred`, err);
 });
