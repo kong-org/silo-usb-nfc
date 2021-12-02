@@ -72,15 +72,15 @@ logger.info(`command code: ` + commandCode)
 // INIT
 //
 
-            // Hardware Model
-      var hardwareModelAtecc608a = Buffer.from('ATECC608A');
-      var atecc608a = '0x' + crypto.createHash('sha256').update(hardwareModelAtecc608a).digest('hex');
+// Hardware Model
+var hardwareModelAtecc608a = Buffer.from('ATECC608A');
+var atecc608a = '0x' + crypto.createHash('sha256').update(hardwareModelAtecc608a).digest('hex');
 
-      var hardwareModelAtecc608b = Buffer.from('ATECC608B');
-      var atecc608b = '0x' + crypto.createHash('sha256').update(hardwareModelAtecc608b).digest('hex');
+var hardwareModelAtecc608b = Buffer.from('ATECC608B');
+var atecc608b = '0x' + crypto.createHash('sha256').update(hardwareModelAtecc608b).digest('hex');
 
-      logger.info(`ATECC608A hash`, atecc608a)
-      logger.info(`ATECC608B hash`, atecc608b)
+logger.info(`ATECC608A hash`, atecc608a)
+logger.info(`ATECC608B hash`, atecc608b)
 
 
 nfc.on('reader', async reader => {
@@ -332,7 +332,7 @@ nfc.on('reader', async reader => {
           var hardwareManufacturer = Buffer.from('Microchip Technology Inc.');
           completeDict['hardwareManufacturer'] = '0x' + crypto.createHash('sha256').update(hardwareManufacturer).digest('hex');
 
-          // Hardware Model
+          // Hardware Model -- NOTE: this must be manually modified for ATECC608B chips.
           var hardwareModel = Buffer.from('ATECC608A');
           completeDict['hardwareModel'] = '0x' + crypto.createHash('sha256').update(hardwareModel).digest('hex');
 
@@ -340,7 +340,7 @@ nfc.on('reader', async reader => {
           var hardwareSerial = Buffer.from(atecc608aSerial);
           completeDict['hardwareSerial'] = '0x' + crypto.createHash('sha256').update(hardwareSerial).digest('hex');       
 
-          // Hardware Config -- NOTE we slice out the serial number and an incrementing i2c byte
+          // Hardware Config -- NOTE: we slice out the serial number and an incrementing i2c byte
           var configZoneBytesMinusSerial = configZoneBytes.slice(8, 16) + configZoneBytes.slice(26, 28) + configZoneBytes.slice(30, 256)
           var config = new Buffer.from(configZoneBytesMinusSerial)
           completeDict['hardwareConfig'] = '0x' + crypto.createHash('sha256').update(config, 'hex').digest('hex');

@@ -2,7 +2,7 @@
   "name": "silo-usb-nfc-tool",
   "version": "1.0.0",
   "description": "node script for scanning SiLo's",
-  "main": "index.js",
+  "main": "scan.js",
   "dependencies": {
     "crc": "3.8.0",
     "elliptic": "^6",
