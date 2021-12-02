@@ -1,0 +1,8 @@
+node_modules
+build
+export
+verified
+npm-debug.log
+package-lock.json
+.env
+.DS_Store
