@@ -6,7 +6,7 @@ Node script for verifying KONG SiLos via a NFC USB reader such as the [ACR-122](
 
 ## Environment
 
-Tested on MacOS and Raspbian with `node` 17.1.0 and `npm` 8.1.2. 
+Tested on MacOS and Raspbian with `node` 17.1.0 and `npm` 8.1.2. The key package `nfc-pcsc` may be tricky to install as it requires certain dependencies. See the [nfc-pcsc repo](https://github.com/pokusew/nfc-pcsc) for more information.
 
 ## Arguments
 
