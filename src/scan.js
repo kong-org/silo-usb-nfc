@@ -10,6 +10,7 @@ const { NFC } = require('nfc-pcsc');
 const crc  = require('crc'); // we need a specific crc, 'crc16ccitt'
 const argv = require('minimist')(process.argv.slice(2));
 const fs   = require('fs');
+var QRCode = require('qrcode')
 
 const nfc = new NFC();
 
@@ -21,6 +22,7 @@ logger.info(`export json`, argv['json']);
 logger.info(`kill after single scan`, argv['scanonce'])
 logger.info(`verify json`, argv['verify'])
 logger.info(`to be hashed`, '0x' + argv['to_addr'] + argv['block'])
+logger.info(`devices to match`, argv['matchFile'])
 
 //
 // ARGUMENTS
@@ -50,19 +52,36 @@ logger.info(`to be hashed`, '0x' + argv['to_addr'] + argv['block'])
 //
 // --scanonce
 // Usage: Kill the script after an individual scan.
+//
+// --matchFile
+// Usage: Match devices listed in a file.
+//
+// --testMatch
+// Usage: Primary public key hash of test device to match.
+//
+// --saveSig
+// Usage: Save the signature from the device.
+
 
 var command = '00';
 var blockNumber = crypto.randomBytes(32).toString('hex'); // TODO: swap with actual blockNumber
 var toAddress = crypto.randomBytes(20).toString('hex');
 var userPubkey = null;
 var exportJSON = false;
+var exportSig = false;
+var matchFile = null;
+var matchDevices = [];
+var testMatch = null;
 
 if (argv['command']) { command = argv['command'] }
 if (argv['json']) { exportJSON = true }
+if (argv['saveSig']) { exportSig = true }
 
 argv['block'] ? blockNumber = argv['block'] : logger.info(`no block number given, using random number: ` + blockNumber);
 argv['to_addr'] ? toAddress = argv['to_addr'] : logger.info(`no to address given, using random number: ` + toAddress);
 argv['pubkey'] ? userPubkey = argv['pubkey'].toString('hex') : logger.info(`no pubkey given, using externalPublicKey after read`);
+argv['matchFile'] ? matchFile = argv['matchFile'] : logger.info(`no file device match file given.`);
+argv['testMatch'] ? testMatch = argv['testMatch'] : logger.info(`no testMatch device given.`)
 
 var commandCode = command.toString();
 
@@ -82,6 +101,67 @@ var atecc608b = '0x' + crypto.createHash('sha256').update(hardwareModelAtecc608b
 logger.info(`ATECC608A hash`, atecc608a)
 logger.info(`ATECC608B hash`, atecc608b)
 
+// Match Devices
+// In order to export, we will want to use options --to_addr, --json, --block with --command 00
+if (matchFile) {
+  try {
+    matchDevices = JSON.parse(fs.readFileSync(matchFile, 'utf8'));
+    logger.info(`stored devices to match is `, matchDevices.length)
+  } catch(e) {
+    logger.info(`failed to load`, matchFile)
+  }
+}
+
+// Locate a device in match devices.
+function renderDevice(externalPublicKeyHash) {
+      // TODO: find publicKey hash in array here.
+      let foundDevice = matchDevices.find(o => o.primaryPublicKeyHash === '0x' + externalPublicKeyHash);
+
+      if (foundDevice) {
+        if (foundDevice.name) {
+          logger.info(`check out that sweet`, foundDevice.name)
+        }
+
+        if (foundDevice.poap) {
+          QRCode.toString(foundDevice.poap,{type:'terminal'}, function (err, url) {
+            console.log(url)
+          })
+        }
+
+        // TODO: logic to render image  
+      } else {
+        logger.info(`no device found.`)        
+      }
+}
+
+// Save a device signatures.
+function saveDevice(externalPublicKey, primaryPublicKeyHash, combinedHash, externalSignature, verficationKey) {
+
+  // For creating a file proving a device was scanned.
+  var partialDict = {};
+
+  partialDict['primaryPublicKey'] = ['0x' + externalPublicKey.slice(0, 64),'0x' + externalPublicKey.slice(-64)]
+  partialDict['primaryPublicKeyHash'] = primaryPublicKeyHash;
+  partialDict['digest'] = '0x' + combinedHash;
+  partialDict['signature'] = '0x' + externalSignature;
+  partialDict['signingKey'] = verficationKey;  
+
+  fs.writeFileSync(`./signatures/${primaryPublicKeyHash}.json`, JSON.stringify(partialDict), 'utf8', (err, res) => {
+
+    if (!err) {
+        console.log('saving signature for the device: ' + primaryPublicKeyHash);
+    } else if (err) {
+        console.log(err);
+    }
+
+  })
+}
+
+if (matchDevices && testMatch) {
+  logger.info(`test matching device `, testMatch)
+  renderDevice(testMatch)
+  saveDevice("test-primaryPublicKey", '0x' + testMatch, "test-combinedHash", "test-externalSignature", "test-verficationKey")
+}
 
 nfc.on('reader', async reader => {
 
@@ -302,12 +382,21 @@ nfc.on('reader', async reader => {
 
       await helpers._delay(100);
 
+      // If a device is found, then render information about it.
+      if (matchDevices) {
+        renderDevice(externalPublicKeyHash);
+      }
+
       //
       // EXPORT JSON or VERIFY
       //
       if (stringDebugBytes == "Tag written\u0000") { 
 
         var primaryPublicKeyHash = '0x' + crypto.createHash('sha256').update(externalPublicKey, 'hex').digest('hex');
+
+        if (exportSig) {
+          saveDevice(externalPublicKey, primaryPublicKeyHash, combinedHash, externalSignature, verficationKey);
+        }
 
         if (exportJSON) {
           // Create dictionary to hold it all.
@@ -361,7 +450,7 @@ nfc.on('reader', async reader => {
                   }
 
               })           
-            } else {
+            } else { 
               console.log('Refusing to export, missing param required for smart contract or not command 0x56');
             }          
           };

@@ -1,0 +1,14 @@
+[
+    {
+      "name": "MetaFactory Genesis Bomber 1",
+      "primaryPublicKeyHash": "0x42daf97303981c83c1b44d5501d2a22e1c78e4b9709b69dc433c41fd660211e9",
+      "image": "https://miro.medium.com/max/1400/1*YXQ7prqb9GMSBPoVv68tWQ.png",
+      "poap": "http://POAP.xyz/claim/URL"
+    },
+    {
+      "name": "MetaFactory Genesis Bomber 2",
+      "primaryPublicKeyHash": "0xc9e2404a9c22646048fadd7dcfe516155f1cf5f6139094608155e732eb42ed23",
+      "image": "https://miro.medium.com/max/1400/1*YXQ7prqb9GMSBPoVv68tWQ.png",
+      "poap": "http://POAP.xyz/claim/URL"
+    }
+]

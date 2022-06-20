@@ -2,6 +2,7 @@ node_modules
 build
 export
 verified
+signatures
 npm-debug.log
 package-lock.json
 .env

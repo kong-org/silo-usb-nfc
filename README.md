@@ -17,6 +17,9 @@ Tested on MacOS and Raspbian with `node` 17.1.0 and `npm` 8.1.2. The key package
 - `json`: Indicate via boolean whether or not to print out certain SiLo values in a JSON blob. Note that under command `00` these values are missing the `tertiaryPublicKey`. NOTE: requires an `export` dir to be present in the root project directory to be created.
 - `verify`: Boolean, use the script in verification mode; if a corresponding JSON file exists for a SiLo in `/export`, this command will move the file to `/verify` if the device successfully generates a signature. NOTE: requires `export` and `verify` dirs to be present in the root project directory.
 - `scanonce`: Boolean, activate with `=y`, will kill script after scanning a single SiLo.
+- `matchFile`: Match devices listed in a file. See `example-match.json` for formatting. `primaryPublicKeyHash` is expected. `name` and `poap` are optional to show a name and render a POAP URL as QR code.
+- `testMatch` : Test matching a device that you don't have on hand to scan.
+- `saveSig` : Save the signature of the device. You must create a `signatures` directory.
 
 ### SiLo Command Codes
 
