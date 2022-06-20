@@ -3,6 +3,7 @@
  * @description SiLo NFC USB scan script
  */
 
+ const { exec } = require('node:child_process');
 const { helpers, crypto, elliptic } = require('../lib/helpers.js');
 const { logger } = require('../lib/pretty-logger.js');
 
@@ -114,7 +115,7 @@ if (matchFile) {
 
 // Locate a device in match devices.
 function renderDevice(externalPublicKeyHash) {
-      // TODO: find publicKey hash in array here.
+
       let foundDevice = matchDevices.find(o => o.primaryPublicKeyHash === '0x' + externalPublicKeyHash);
 
       if (foundDevice) {
@@ -128,7 +129,9 @@ function renderDevice(externalPublicKeyHash) {
           })
         }
 
-        // TODO: logic to render image  
+        if (foundDevice.image) {
+          exec(`open ${foundDevice.image}`);
+        }
       } else {
         logger.info(`no device found.`)        
       }
