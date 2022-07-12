@@ -22,7 +22,6 @@ logger.info(`validation pub key`, argv['pubkey']);
 logger.info(`export json`, argv['json']);
 logger.info(`kill after single scan`, argv['scanonce'])
 logger.info(`verify json`, argv['verify'])
-logger.info(`to be hashed`, '0x' + argv['to_addr'] + argv['block'])
 logger.info(`devices to match`, argv['matchFile'])
 
 //
@@ -66,7 +65,7 @@ logger.info(`devices to match`, argv['matchFile'])
 
 var command = '00';
 var blockNumber = crypto.randomBytes(32).toString('hex'); // TODO: swap with actual blockNumber
-var toAddress = crypto.randomBytes(20).toString('hex');
+var toAddress = '0000000000000000000000000000000000000000';
 var userPubkey = null;
 var exportJSON = false;
 var exportSig = false;
@@ -79,10 +78,12 @@ if (argv['json']) { exportJSON = true }
 if (argv['saveSig']) { exportSig = true }
 
 argv['block'] ? blockNumber = argv['block'] : logger.info(`no block number given, using random number: ` + blockNumber);
-argv['to_addr'] ? toAddress = argv['to_addr'] : logger.info(`no to address given, using random number: ` + toAddress);
+argv['to_addr'] ? toAddress = argv['to_addr'] : logger.info(`no to address givenm using blank value:` + toAddress);
 argv['pubkey'] ? userPubkey = argv['pubkey'].toString('hex') : logger.info(`no pubkey given, using externalPublicKey after read`);
 argv['matchFile'] ? matchFile = argv['matchFile'] : logger.info(`no file device match file given.`);
 argv['testMatch'] ? testMatch = argv['testMatch'] : logger.info(`no testMatch device given.`)
+
+logger.info(`to be hashed`, '0x' + argv['to_addr'] + argv['block'])
 
 var commandCode = command.toString();
 
@@ -128,7 +129,7 @@ function renderDevice(externalPublicKeyHash) {
             console.log(url)
           })
         }
-
+        
         if (foundDevice.image) {
           exec(`open ${foundDevice.image}`);
         }
@@ -251,10 +252,7 @@ nfc.on('reader', async reader => {
       */       
 
       // Create the random number and get the block number that we'll sign
-      var randomNumber = crypto.randomBytes(32).toString('hex');
-
-      logger.info(`toAddress`, toAddress);
-      logger.info(`blockNumber`, blockNumber);
+      // var randomNumber = crypto.randomBytes(32).toString('hex');
 
       // Create the buffers to be hashed
       const addressBuffer = Buffer.from(toAddress, 'hex');
@@ -262,7 +260,7 @@ nfc.on('reader', async reader => {
       const combinedBuffer = Buffer.concat([addressBuffer,blockBuffer]);
 
       // Create the sha256 of the randomNumber and blockNumber
-      var combinedHash = crypto.createHash('sha256').update(combinedBuffer).digest('hex');
+      const combinedHash = crypto.createHash('sha256').update(combinedBuffer).digest('hex');
 
       logger.info(`combinedHash`, combinedHash);
 
