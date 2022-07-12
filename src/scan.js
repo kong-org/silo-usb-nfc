@@ -78,7 +78,7 @@ if (argv['json']) { exportJSON = true }
 if (argv['saveSig']) { exportSig = true }
 
 argv['block'] ? blockNumber = argv['block'] : logger.info(`no block number given, using random number: ` + blockNumber);
-argv['to_addr'] ? toAddress = argv['to_addr'] : logger.info(`no to address givenm using blank value:` + toAddress);
+argv['to_addr'] ? toAddress = argv['to_addr'] : logger.info(`no to address given using blank value:` + toAddress);
 argv['pubkey'] ? userPubkey = argv['pubkey'].toString('hex') : logger.info(`no pubkey given, using externalPublicKey after read`);
 argv['matchFile'] ? matchFile = argv['matchFile'] : logger.info(`no file device match file given.`);
 argv['testMatch'] ? testMatch = argv['testMatch'] : logger.info(`no testMatch device given.`)
