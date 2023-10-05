@@ -28,6 +28,7 @@ The first generation SiLo's, including KONG Cash and KONG Passports, will accept
 - `00`: Generate a signature from a 32 byte input (typically a hash comprised of a random number and recent blockhash or a user's address and recent blockhash)
 - `55`: This is a special command with only a limited set of uses. It will generate a signature using the ECDSA keypair associated with `tertiaryPublicKey`. It first generation SiLo's it can be used a maximum of 5 times before refusing to sign additional data.
 - `56`: This is a special command that will reveal the `tertiaryPublicKey` which is not normally shown in any of the NDEF records.
+- `a5`: This is a special reformat command that will rewrite the public key information from the secure element to the NFC chip. This command may help to recover a chip that cannot product valid signatures and may be need to be repeated or alternated with `00` in order to recover a chip.
 
 ## Exmaple
 
@@ -90,3 +91,9 @@ You must have an NFC scanner in order to use this script. Occasionally driver is
 100 KONG = 100000000000000000000
 500 KONG = 500000000000000000000
 ```
+
+### Recovering a Chip
+
+In the event you have a KONG Cash note or Passport that will not reliably create signatures that can be verified, you may attempt a recovery by using the `a5` reformat command. To do this, run the script in `command` mode with `a5` as the command; no other parameters are required.
+
+You may need to run the command 2-3 times; in between attempting to reformat the note or Passport, run command `00` to see if a valid signature can be produced (`verification worked? true`). Once a valid signature is produced, do not run the `a5` command again unless future corruption occurs.
